@@ -49,11 +49,10 @@ GraphicsWindow.CanResize = 0
 GraphicsWindow.Height = 500
 GraphicsWindow.Width = GraphicsWindow.Height * 1.77
 
-
+' = Subroutines =
 ' Shoot the bullet on SPACEBAR
 Sub shootBullet
   If (b_isShotFired = 0) Then
-    TextWindow.WriteLine("FIRE")
     b_isShotFired = 1
     i_shotsFired = i_shotsFired + 1
     
@@ -97,31 +96,108 @@ Sub moveDown
   If _top > _bound Then
     Shapes.Move(objs[0]["image"], _left, _bound)
   EndIf
-
 EndSub
+
+' Move the bullet
+Sub moveBullet
+  If b_isShotFired = 1 Then
+    _bulletX = Shapes.GetLeft(objs[1]["image"])
+    _bulletY = Shapes.GetTop(objs[1]["image"])
+    
+    _newBulletX = _bulletX - i_bulletSpeed
+   
+    If _newBulletX < -objs[1]["width"] Then
+      Shapes.HideShape(objs[1]["image"])    
+      b_isShotFired = 0
+    Else 
+      Shapes.Move(objs[1]["image"], _newBulletX, _bulletY)  
+    EndIf
+  EndIf
+  
+EndSub
+
+' Move the balloon
+_balloonDirection = 1 ' -1 - up
+                      '  1 - down
+' // _balloonDistanceSinceDirectionChange = 0
+_balloonHitBoxY1 = 10 ' 10px from top
+_balloonHitBoxY2 = 63 ' 63px from top
+Sub moveBalloon
+  ' 1/100 chance to change direction
+  If Math.GetRandomNumber(100) = 1 Then
+    If _balloonDirection = -1 Then
+      _balloonDirection = 1
+    Else 
+      _balloonDirection = -1
+    EndIf
+  EndIf
+  
+  _balloonX = Shapes.GetLeft(objs[2]["image"])
+  _balloonY = Shapes.GetTop(objs[2]["image"])
+  
+  _newBalloonY = _balloonY + _balloonDirection * i_balloonSpeed
+  
+  Shapes.Move(objs[2]["image"], _balloonX, _newBalloonY)
+  
+  If _balloonDirection = 1 Then
+    If _newBalloonY > GraphicsWindow.Height - (objs[2]["height"] - _balloonHitBoxY2) Then
+      _balloonDirection = -1
+    EndIf
+  
+  ElseIf _balloonDirection = -1 Then
+    If _newBalloonY < 0 Then
+      _balloonDirection = 1
+    EndIf
+  EndIf
+  
+EndSub
+
+' Check if the bullet hit the balloon
+Sub checkCollide
+  If b_isShotFired <> 0 Then
+    
+    _bulletX = Shapes.GetLeft(objs[1]["image"])
+    _bulletY= Shapes.GetTop(objs[1]["image"])
+  
+    _balloonX = Shapes.GetLeft(objs[2]["image"])
+    _balloonY = Shapes.GetTop(objs[2]["image"])
+  
+    If _bulletX <= _balloonX + objs[2]["width"] Then
+      _balloonHitBoxY1_ABS = _balloonY + _balloonHitBoxY1
+      _balloonHitBoxY2_ABS = _balloonY + _balloonHitBoxY2
+      
+      If _bulletY >= _balloonHitBoxY1_ABS Then
+        If _bulletY <= _balloonHitBoxY2_ABS Then
+          game_end()
+        EndIf
+      EndIf
+    EndIf
+  EndIf
+EndSub
+
 
 GraphicsWindow.KeyDown = evt_keyPress
 Sub evt_keyPress
-  lastKey = GraphicsWindow.LastKey
+  If b_isGamePlaying = 1 Then
+    
+    lastKey = GraphicsWindow.LastKey
   
-  If (lastKey = "Space") Then
-    shootBullet()
+    If (lastKey = "Space") Then
+      shootBullet()
     
-  ElseIf (lastKey = "Up") Then 
-    moveUp()
-  ElseIf (lastKey = "W") Then 
-    moveUp()
+    ElseIf (lastKey = "Up") Then 
+      moveUp()
+    ElseIf (lastKey = "W") Then 
+      moveUp()
     
-  ElseIf (lastKey = "Down") Then 
-    moveDown()
-  ElseIf (lastKey = "S") Then 
-    moveDown()
-    
-  Else
-    TextWindow.WriteLine(lastKey)  
-  EndIf    
+    ElseIf (lastKey = "Down") Then 
+      moveDown()
+    ElseIf (lastKey = "S") Then 
+      moveDown()
+   
+   EndIf
+ EndIf
 EndSub
-
 
 
 ' obj_init - Loads an image into the `objs` ... thing... Hides the sprite from display
@@ -134,7 +210,7 @@ Sub obj_init
   objs[args[1]]["height"] = ImageList.GetHeightOfImage(objs[args[1]]["sprite"])
   objs[args[1]]["width"] = ImageList.GetWidthOfImage(objs[args[1]]["sprite"])
   Shapes.HideShape(objs[args[1]]["image"])
-  TextWindow.WriteLine("Initialised image: " + objs[args[1]]["image"] + " @ " + args[0])
+  'TextWindow.WriteLine("Initialised image: " + objs[args[1]]["image"] + " @ " + args[0])
 EndSub
 
 
@@ -153,41 +229,58 @@ obj_init()
 
 ' --------------------
 
+b_isGamePlaying = 1
 
-' Initialise the player to the bottom right of the screen
-Shapes.Move(objs[0]["image"], GraphicsWindow.Width - objs[0]["width"], GraphicsWindow.Height - objs[0]["height"])
-Shapes.ShowShape(objs[0]["image"])
-
-' Initialise the balloon to the top left of the screen
-' We don't actually have to do this as Shapes are created at origin (0,0) automatically... but eh why not
-Shapes.Move(objs[2]["image"], 0, 0)
-Shapes.ShowShape(objs[2]["image"])
-
-
-fps = 60
-itvl = 1000 / fps
-Timer.Interval = itvl
-Timer.Tick = evt_tick
-
-Sub evt_tick
-  ' Move bullet
-  If b_isShotFired = 1 Then
-    _bulletX = Shapes.GetLeft(objs[1]["image"])
-    _bulletY = Shapes.GetTop(objs[1]["image"])
-   
-    Shapes.Move(objs[1]["image"], _bulletX - i_bulletSpeed, _bulletY)
-   
-   If _bulletX < -objs[1]["width"] Then
-     TextWindow.WriteLine("BOUNDS")
-      'Shapes.HideShape(objs[1]["image"])    
-      b_isShotFired = 0
-    EndIf
+Sub game_end
+  b_isGamePlaying = 0
   
-  EndIf
+  'TextWindow.WriteLine("Game Over!")
+  'TextWindow.WriteLine("You missed " + (i_shotsFired-1) + " shot(s)!")
   
-  ' Move balloon
+  GraphicsWindow.FontSize = 50
+  GraphicsWindow.DrawText(GraphicsWindow.Width / 3, GraphicsWindow.Height * 3/8 ,"Game Over!")
   
-  ' Check for collision
+  GraphicsWindow.FontSize = 36
+  GraphicsWindow.DrawText(GraphicsWindow.Width / 4, GraphicsWindow.Height * 5/9 ,"You missed " + (i_shotsFired-1) + " shot(s)!")
+  
+  Timer.Pause()
+  
 EndSub
 
+Sub game_reset
+  _balloonDirection = 1
+  i_shotsFired = 0
+  b_isShotFired = 0
+  
+  ' Initialise the player to the bottom right of the screen
+  Shapes.Move(objs[0]["image"], GraphicsWindow.Width - objs[0]["width"], GraphicsWindow.Height - objs[0]["height"])
+  Shapes.ShowShape(objs[0]["image"])
 
+  ' Initialise the balloon to the top left of the screen
+  ' We don't actually have to do this as Shapes are created at origin (0,0) automatically... but eh why not
+  Shapes.Move(objs[2]["image"], 0, 0)
+  Shapes.ShowShape(objs[2]["image"])
+  
+  b_isGamePlaying = 1
+  Timer.Resume()
+EndSub
+
+fps = 60
+Timer.Interval = 1000 / fps
+Timer.Tick = evt_tick
+Sub evt_tick
+  If b_isGamePlaying = 1 Then
+    
+    ' Move bullet
+    moveBullet()
+  
+    ' Move balloon
+    moveBalloon()
+    
+    ' Check for collision
+    checkCollide()  
+  EndIf
+EndSub
+
+game_reset()
+' TextWindow.WriteLine("Game started!")
