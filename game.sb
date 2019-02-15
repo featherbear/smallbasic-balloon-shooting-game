@@ -122,3 +122,45 @@ Sub evt_keyPress
   EndIf    
 EndSub
 
+
+
+' obj_init - Loads an image into the `objs` ... thing... Hides the sprite from display
+objs = -------------------------------------------------------------0
+Sub obj_init
+  ' args[0] - image to load
+  ' args[1] - n-index to store in `objs`
+  objs[args[1]]["sprite"] = ImageList.LoadImage(args[0])
+  objs[args[1]]["image"] = Shapes.AddImage(objs[args[1]]["sprite"])
+  objs[args[1]]["height"] = ImageList.GetHeightOfImage(objs[args[1]]["sprite"])
+  objs[args[1]]["width"] = ImageList.GetWidthOfImage(objs[args[1]]["sprite"])
+  Shapes.HideShape(objs[args[1]]["image"])
+  TextWindow.WriteLine("Initialised image: " + objs[args[1]]["image"] + " @ " + args[0])
+EndSub
+
+
+' --------------------
+args[0] = Program.Directory + "\sprite_cannon.png"
+args[1] = 0
+obj_init()
+
+args[0] = Program.Directory + "\sprite_bullet.png"
+args[1] = 1
+obj_init()
+
+args[0] = Program.Directory + "\sprite_balloon.png"
+args[1] = 2
+obj_init()
+
+' --------------------
+
+
+' Initialise the player to the bottom right of the screen
+Shapes.Move(objs[0]["image"], GraphicsWindow.Width - objs[0]["width"], GraphicsWindow.Height - objs[0]["height"])
+Shapes.ShowShape(objs[0]["image"])
+
+' Initialise the balloon to the top left of the screen
+' We don't actually have to do this as Shapes are created at origin (0,0) automatically... but eh why not
+Shapes.Move(objs[2]["image"], 0, 0)
+Shapes.ShowShape(objs[2]["image"])
+
+
