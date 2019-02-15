@@ -164,3 +164,30 @@ Shapes.Move(objs[2]["image"], 0, 0)
 Shapes.ShowShape(objs[2]["image"])
 
 
+fps = 60
+itvl = 1000 / fps
+Timer.Interval = itvl
+Timer.Tick = evt_tick
+
+Sub evt_tick
+  ' Move bullet
+  If b_isShotFired = 1 Then
+    _bulletX = Shapes.GetLeft(objs[1]["image"])
+    _bulletY = Shapes.GetTop(objs[1]["image"])
+   
+    Shapes.Move(objs[1]["image"], _bulletX - i_bulletSpeed, _bulletY)
+   
+   If _bulletX < -objs[1]["width"] Then
+     TextWindow.WriteLine("BOUNDS")
+      'Shapes.HideShape(objs[1]["image"])    
+      b_isShotFired = 0
+    EndIf
+  
+  EndIf
+  
+  ' Move balloon
+  
+  ' Check for collision
+EndSub
+
+
