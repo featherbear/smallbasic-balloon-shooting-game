@@ -1,0 +1,18 @@
+' https://github.com/featherbear/balloon-shooting-challenge
+
+'The Challenge - Develop a shooting game, the player goal is to shoot the balloon down.  
+
+'   CONTROLS
+'* The player can move the cannon up and down using the arrow keys
+'* To fire a bullet the player will press [SPACE].
+
+'   RULES
+'* The balloon should move up and down randomly.
+'* The player can shoot one bullet at a time.
+'* Only when the bullet is out of the game then the player can shoot again.
+'* The game ends when the balloon is shot down, please show the amount of missed shots.
+'* The bullet speed should be 1.5 times the speed of the balloon.
+'* The balloon can change directions (up or down) at any time.
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
