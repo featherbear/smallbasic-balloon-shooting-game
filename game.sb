@@ -16,3 +16,109 @@
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+' = Settings go here =
+
+' Balloon speed - How fast the balloon moves
+i_balloonSpeed = 5
+
+' Balloon randomness rate - How frequent the balloon changes direction
+i_balloonRandomness = 1
+
+' Player speed - How fast the player moves
+i_playerSpeed = 5
+
+' Bullet speed - How fast the bullet moves (Specs require 1.5x the balloon speed)
+i_bulletSpeed = 1.5 * i_balloonSpeed
+
+' Variables
+i_shotsFired = 0
+b_isShotFired = 0 ' No booleans, welp.
+
+
+' = "Function" arguments and returns =
+args = -------------------------------------------------------------0
+rets = -------------------------------------------------------------0
+
+' = Setup UI =
+
+GraphicsWindow.BackgroundColor = "White"
+GraphicsWindow.Title = "Balloon Shooting Challenge"
+GraphicsWindow.CanResize = 0
+
+' Dimensions - So the game window in the challenge specification had an aspect ratio of 1.77:1 (l:h)
+GraphicsWindow.Height = 500
+GraphicsWindow.Width = GraphicsWindow.Height * 1.77
+
+
+' Shoot the bullet on SPACEBAR
+Sub shootBullet
+  If (b_isShotFired = 0) Then
+    TextWindow.WriteLine("FIRE")
+    b_isShotFired = 1
+    i_shotsFired = i_shotsFired + 1
+    
+    ' Create the bullet
+    _bulletX = GraphicsWindow.Width - objs[0]["width"] - objs[1]["width"]
+    _bulletY = Shapes.GetTop(objs[0]["image"]) + objs[0]["height"]/2 - objs[1]["height"]/2
+    Shapes.ShowShape(objs[1]["image"])
+    Shapes.Move(objs[1]["image"], _bulletX, _bulletY)
+  EndIf
+EndSub
+
+' Move the player up
+Sub moveUp
+  ' If the top of the player has not exceeded the game bounds, then move up
+  _top = Shapes.GetTop(objs[0]["image"])
+  _left = Shapes.GetLeft(objs[0]["image"])
+  _bound = 0
+  
+  If _top > 0 Then
+    Shapes.Move(objs[0]["image"], _left, _top - i_playerSpeed)
+  EndIf
+  
+  If _top < _bound Then
+    Shapes.Move(objs[0]["image"], _left, _bound)
+  EndIf
+  
+EndSub
+
+
+' Move the player down
+Sub moveDown
+  ' If the bottom of the player has not exceeded the game bounds, then move down
+  _top = Shapes.GetTop(objs[0]["image"])
+  _left = Shapes.GetLeft(objs[0]["image"])
+  _bound = GraphicsWindow.Height - objs[0]["height"]
+  
+  If _top < _bound Then
+    Shapes.Move(objs[0]["image"], _left, _top + i_playerSpeed)
+  EndIf
+  
+  If _top > _bound Then
+    Shapes.Move(objs[0]["image"], _left, _bound)
+  EndIf
+
+EndSub
+
+GraphicsWindow.KeyDown = evt_keyPress
+Sub evt_keyPress
+  lastKey = GraphicsWindow.LastKey
+  
+  If (lastKey = "Space") Then
+    shootBullet()
+    
+  ElseIf (lastKey = "Up") Then 
+    moveUp()
+  ElseIf (lastKey = "W") Then 
+    moveUp()
+    
+  ElseIf (lastKey = "Down") Then 
+    moveDown()
+  ElseIf (lastKey = "S") Then 
+    moveDown()
+    
+  Else
+    TextWindow.WriteLine(lastKey)  
+  EndIf    
+EndSub
+
